@@ -1,0 +1,26 @@
+<launch>
+  <arg name="headless" default="False"/>
+  <arg name="fwddyn" default="True"/>
+  <arg name="robot" default="jaxon"/>
+  <arg name="solver_type" default="0"/> <!-- 0: FDDP,  1: BOX_FDDP, 2: INTRO, 3: HPIPM_SQP -->
+  <arg name="num_steps" default="6"/>
+
+  <include file="$(find simple_biped_gaits_tutorial)/launch/display.launch">
+    <arg name="robot" value="$(arg robot)"/>
+    <arg name="headless" value="$(arg headless)"/>
+    <arg name="use_joint_state_publisher_gui" value="False"/>
+  </include>
+
+  <group ns="$(arg robot)">
+
+    <node pkg="simple_biped_gaits_tutorial" type="simple_biped_gaits" name="simple_biped_gaits"
+          output="screen">
+      <rosparam command="load" file="$(find simple_biped_gaits_tutorial)/config/gait_$(arg robot).yaml"/>
+      <param name="fwddyn" value="$(arg fwddyn)"/>
+      <param name="solver_type" value="$(arg solver_type)"/>
+      <param name="num_steps" value="$(arg num_steps)"/>
+    </node>
+
+  </group>
+
+</launch>

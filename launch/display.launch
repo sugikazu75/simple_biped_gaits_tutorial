@@ -1,0 +1,21 @@
+<launch>
+  <arg name="robot" default="jaxon"/>
+  <arg name="rviz_config" default="$(find simple_biped_gaits_tutorial)/config/rviz_config_jaxon"/>
+  <arg name="headless" default="False"/>
+  <arg name="use_joint_state_publisher_gui" default="True"/>
+
+  <group ns="$(arg robot)">
+
+    <param name="robot_description" command="$(find xacro)/xacro $(find cart_humanoid)/urdf/JAXON_RED.urdf.xacro"/>
+
+    <node name="joint_state_publisher_gui" pkg="joint_state_publisher_gui" type="joint_state_publisher_gui" if="$(arg use_joint_state_publisher_gui)"/>
+
+    <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
+      <param name="tf_prefix" value="$(arg robot)"/>
+    </node>
+
+  </group>
+
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(arg rviz_config)" unless="$(arg headless)"/>
+
+</launch>
