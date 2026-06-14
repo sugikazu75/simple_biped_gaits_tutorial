@@ -437,6 +437,13 @@ std::shared_ptr<crocoddyl::ActionModelAbstract> BipedControllerCore::createSwing
     }
   }
 
+  // centroidal momentum regularization cost
+  std::shared_ptr<crocoddyl::ResidualModelAbstract> centroidal_momentum_residual =
+    std::make_shared<crocoddyl::ResidualModelCentroidalMomentum>(state_, Eigen::VectorXd::Zero(6), nu);
+  std::shared_ptr<crocoddyl::CostModelAbstract> centroidalMomentumReg =
+    std::make_shared<crocoddyl::CostModelResidual>(state_, centroidal_momentum_residual);
+  costModel->addCost("centroidalMomentumReg", centroidalMomentumReg, config_.cost_weight.centroidal_momentum_weight);
+
   // state regularization cost
   Eigen::VectorXd x0 = Eigen::VectorXd::Zero(model_->nq + model_->nv);
   x0 << q0_, Eigen::VectorXd::Zero(model_->nv);

@@ -28,6 +28,7 @@
 #include <crocoddyl/multibody/contacts/contact-3d.hpp>
 #include <crocoddyl/multibody/contacts/contact-6d.hpp>
 #include <crocoddyl/multibody/fwd.hpp>
+#include <crocoddyl/multibody/residuals/centroidal-momentum.hpp>
 #include <crocoddyl/multibody/residuals/com-position.hpp>
 #include <crocoddyl/multibody/residuals/contact-wrench-cone.hpp>
 #include <crocoddyl/multibody/residuals/frame-placement.hpp>
@@ -57,6 +58,7 @@ public:
     Eigen::VectorXd x_weights = Eigen::VectorXd::Zero(0);
     double control_weight = 1e-1;
     double com_track_weight = 1e6;
+    double centroidal_momentum_weight = 1e-2;
     double foot_track_weight = 1e6;
     double contact_wrench_weight = 1e1;
   };
@@ -109,6 +111,7 @@ public:
       std::cout << "x_weights: " << cost_weight.x_weights.transpose() << std::endl;
       std::cout << "control_weight: " << cost_weight.control_weight << std::endl;
       std::cout << "com_track_weight: " << cost_weight.com_track_weight << std::endl;
+      std::cout << "centroidal_momentum_weight: " << cost_weight.centroidal_momentum_weight << std::endl;
       std::cout << "foot_track_weight: " << cost_weight.foot_track_weight << std::endl;
       std::cout << "contact_wrench_weight: " << cost_weight.contact_wrench_weight << std::endl;
     }

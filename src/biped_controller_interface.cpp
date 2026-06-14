@@ -62,6 +62,8 @@ BipedControllerCore::Config BipedControllerInterface::loadCoreConfig(ros::NodeHa
     config.cost_weight.x_weights = Eigen::Map<Eigen::VectorXd>(x_weights.data(), x_weights.size());
   pnh.param<double>("control_weight", config.cost_weight.control_weight, config.cost_weight.control_weight);
   pnh.param<double>("com_track_weight", config.cost_weight.com_track_weight, config.cost_weight.com_track_weight);
+  pnh.param<double>("centroidal_momentum_weight", config.cost_weight.centroidal_momentum_weight,
+                    config.cost_weight.centroidal_momentum_weight);
   pnh.param<double>("foot_track_weight", config.cost_weight.foot_track_weight, config.cost_weight.foot_track_weight);
   pnh.param<double>("contact_wrench_weight", config.cost_weight.contact_wrench_weight,
                     config.cost_weight.contact_wrench_weight);
