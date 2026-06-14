@@ -462,7 +462,7 @@ std::shared_ptr<crocoddyl::ActionModelAbstract> BipedControllerCore::createSwing
     ctrlReg = std::make_shared<crocoddyl::CostModelResidual>(state_, ctrlResidual);
   }
 
-  costModel->addCost("stateReg", stateReg, config_.cost_weight.state_weight);
+  costModel->addCost("stateReg", stateReg, 1.0);
   costModel->addCost("ctrlReg", ctrlReg, config_.cost_weight.control_weight);
 
   // Creating the action model for the KKT dynamics with symplectic Euler

@@ -60,7 +60,6 @@ BipedControllerCore::Config BipedControllerInterface::loadCoreConfig(ros::NodeHa
   pnh.getParam("x_weights", x_weights);
   if (x_weights.size() > 0)
     config.cost_weight.x_weights = Eigen::Map<Eigen::VectorXd>(x_weights.data(), x_weights.size());
-  pnh.param<double>("state_weight", config.cost_weight.state_weight, config.cost_weight.state_weight);
   pnh.param<double>("control_weight", config.cost_weight.control_weight, config.cost_weight.control_weight);
   pnh.param<double>("com_track_weight", config.cost_weight.com_track_weight, config.cost_weight.com_track_weight);
   pnh.param<double>("foot_track_weight", config.cost_weight.foot_track_weight, config.cost_weight.foot_track_weight);

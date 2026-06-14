@@ -55,7 +55,6 @@ public:
   struct CostWeight
   {
     Eigen::VectorXd x_weights = Eigen::VectorXd::Zero(0);
-    double state_weight = 1e1;
     double control_weight = 1e-1;
     double com_track_weight = 1e6;
     double foot_track_weight = 1e6;
@@ -108,7 +107,6 @@ public:
     {
       std::cout << "cost weights: " << std::endl;
       std::cout << "x_weights: " << cost_weight.x_weights.transpose() << std::endl;
-      std::cout << "state_weight: " << cost_weight.state_weight << std::endl;
       std::cout << "control_weight: " << cost_weight.control_weight << std::endl;
       std::cout << "com_track_weight: " << cost_weight.com_track_weight << std::endl;
       std::cout << "foot_track_weight: " << cost_weight.foot_track_weight << std::endl;
