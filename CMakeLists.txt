@@ -15,7 +15,6 @@ find_package(Eigen3 REQUIRED)
 find_package(pinocchio REQUIRED)
 find_package(crocoddyl REQUIRED)
 find_package(OpenMP REQUIRED)
-find_package(hpipm-cpp REQUIRED)  # required by the crocoddyl imported target
 
 catkin_package(
   INCLUDE_DIRS include
