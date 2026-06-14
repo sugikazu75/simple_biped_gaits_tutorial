@@ -1,8 +1,8 @@
 #pragma once
 
-#include <pinocchio/fwd.hpp>  // should be included before any other pinocchio headers
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
+#include <pinocchio/fwd.hpp> // should be included before any other pinocchio headers
 
 #include <simple_biped_gaits_tutorial/biped_controller_core.hpp>
 
@@ -16,18 +16,18 @@
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <tf2_ros/transform_broadcaster.h>
 
-class BipedControllerInterface
-{
+class BipedControllerInterface {
 public:
-  BipedControllerInterface(ros::NodeHandle& nh, ros::NodeHandle& pnh);
+  BipedControllerInterface(ros::NodeHandle &nh, ros::NodeHandle &pnh);
   ~BipedControllerInterface() = default;
 
   void update();
 
-  double getTimeStep() const { return core_->getConfig().time_step;}
+  double getTimeStep() const { return core_->getConfig().time_step; }
 
 protected:
-  static BipedControllerCore::Config loadCoreConfig(ros::NodeHandle& nh, ros::NodeHandle& pnh);
+  static BipedControllerCore::Config loadCoreConfig(ros::NodeHandle &nh,
+                                                    ros::NodeHandle &pnh);
 
   void publish(int pub_idx);
   void publishRootPose(int pub_idx);
