@@ -35,4 +35,6 @@ x_weights: [0.0, 0.0, 0.0, 100000.0, 100000.0, 100000.0,                        
 
 control_weight: 0.1
 com_track_weight: 100000
+centroidal_momentum_weight: 0.1
 foot_track_weight: 100000
+contact_wrench_weight: 10
