@@ -1,9 +1,10 @@
 #pragma once
 
+#include <pinocchio/fwd.hpp> // should be included before any other pinocchio headers
+
 #include <pinocchio/algorithm/center-of-mass.hpp>
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
-#include <pinocchio/fwd.hpp> // should be included before any other pinocchio headers
 #include <pinocchio/multibody/frame.hpp>
 #include <pinocchio/multibody/model.hpp>
 #include <pinocchio/parsers/urdf.hpp>

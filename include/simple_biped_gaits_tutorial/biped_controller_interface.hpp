@@ -1,8 +1,9 @@
 #pragma once
 
+#include <pinocchio/fwd.hpp> // should be included before any other pinocchio headers
+
 #include <pinocchio/algorithm/frames.hpp>
 #include <pinocchio/algorithm/kinematics.hpp>
-#include <pinocchio/fwd.hpp> // should be included before any other pinocchio headers
 
 #include <simple_biped_gaits_tutorial/biped_controller_core.hpp>
 
