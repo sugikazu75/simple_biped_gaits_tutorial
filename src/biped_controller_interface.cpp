@@ -2,6 +2,8 @@
 
 #include <set>
 
+using Scalar = BipedControllerCore::Scalar;
+
 BipedControllerInterface::BipedControllerInterface(ros::NodeHandle &nh,
                                                    ros::NodeHandle &pnh)
     : nh_(nh), pnh_(pnh),
@@ -110,66 +112,69 @@ void BipedControllerInterface::publish(int pub_idx) {
 
 void BipedControllerInterface::publishContactWrenches(int pub_idx) {
   auto contacts = core_->getContactModelAndData(pub_idx);
-  std::shared_ptr<crocoddyl::ContactModelMultiple> contacts_model =
+  std::shared_ptr<crocoddyl::ContactModelMultipleTpl<Scalar>> contacts_model =
       contacts.first;
-  std::shared_ptr<crocoddyl::ContactDataMultiple> contacts_data =
+  std::shared_ptr<crocoddyl::ContactDataMultipleTpl<Scalar>> contacts_data =
       contacts.second;
   const auto &config = core_->getConfig();
   const auto &us = core_->getUs();
   const auto &model = core_->getModel();
 
-  std::map<std::string, std::shared_ptr<crocoddyl::ContactItem>>
+  std::map<std::string, std::shared_ptr<crocoddyl::ContactItemTpl<Scalar>>>
       contact_container = contacts_model->get_contacts();
-  std::map<std::string, std::shared_ptr<crocoddyl::ContactDataAbstract>>
+  std::map<std::string,
+           std::shared_ptr<crocoddyl::ContactDataAbstractTpl<Scalar>>>
       contact_data_container = contacts_data->contacts;
 
   std::set<std::string> active_contacts_set = contacts_model->get_active_set();
   int contact_start_index = model->nv;
   for (const auto &active_contact : active_contacts_set) {
-    std::shared_ptr<crocoddyl::ContactModelAbstract> contact_model =
+    std::shared_ptr<crocoddyl::ContactModelAbstractTpl<Scalar>> contact_model =
         contact_container[active_contact]->contact;
-    std::shared_ptr<crocoddyl::ContactDataAbstract> contact_data =
+    std::shared_ptr<crocoddyl::ContactDataAbstractTpl<Scalar>> contact_data =
         contact_data_container[active_contact];
 
     Eigen::VectorXd f_contact = Eigen::VectorXd::Zero(6);
 
-    if (auto m6d = std::dynamic_pointer_cast<crocoddyl::ContactModel6D>(
-            contact_model)) {
-      auto d6d =
-          std::dynamic_pointer_cast<crocoddyl::ContactData6D>(contact_data);
+    if (auto m6d =
+            std::dynamic_pointer_cast<crocoddyl::ContactModel6DTpl<Scalar>>(
+                contact_model)) {
+      auto d6d = std::dynamic_pointer_cast<crocoddyl::ContactData6DTpl<Scalar>>(
+          contact_data);
       if (config.fwddyn) {
         switch (m6d->get_type()) {
         case pinocchio::ReferenceFrame::LOCAL:
-          f_contact = d6d->f.toVector();
+          f_contact = d6d->f.toVector().cast<double>();
           break;
         case pinocchio::ReferenceFrame::WORLD:
         case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
-          f_contact = d6d->f_local.toVector();
+          f_contact = d6d->f_local.toVector().cast<double>();
           break;
         }
       } else {
-        pinocchio::Force f;
+        pinocchio::ForceTpl<Scalar> f;
         f.linear() = us.at(pub_idx).segment(contact_start_index, 3);
         f.angular() = us.at(pub_idx).segment(contact_start_index + 3, 3);
         switch (m6d->get_type()) {
         case pinocchio::ReferenceFrame::LOCAL:
-          f_contact = f.toVector();
+          f_contact = f.toVector().cast<double>();
           break;
         case pinocchio::ReferenceFrame::WORLD:
         case pinocchio::ReferenceFrame::LOCAL_WORLD_ALIGNED:
-          f_contact = d6d->lwaMl.actInv(f).toVector();
+          f_contact = d6d->lwaMl.actInv(f).toVector().cast<double>();
           break;
         }
         contact_start_index += 6;
       }
-    } else if (auto m3d = std::dynamic_pointer_cast<crocoddyl::ContactModel3D>(
-                   contact_model)) {
-      auto d3d =
-          std::dynamic_pointer_cast<crocoddyl::ContactData3D>(contact_data);
+    } else if (auto m3d = std::dynamic_pointer_cast<
+                   crocoddyl::ContactModel3DTpl<Scalar>>(contact_model)) {
+      auto d3d = std::dynamic_pointer_cast<crocoddyl::ContactData3DTpl<Scalar>>(
+          contact_data);
       if (config.fwddyn) {
-        f_contact.head<3>() = d3d->f.linear();
+        f_contact.head<3>() = d3d->f.linear().cast<double>();
       } else {
-        f_contact.head<3>() = us.at(pub_idx).segment(contact_start_index, 3);
+        f_contact.head<3>() =
+            us.at(pub_idx).segment(contact_start_index, 3).cast<double>();
         contact_start_index += 3;
       }
     }
@@ -191,7 +196,7 @@ void BipedControllerInterface::publishContactWrenches(int pub_idx) {
 void BipedControllerInterface::publishRootPose(int pub_idx) {
   const auto &model = core_->getModel();
   const auto &xs = core_->getXs();
-  Eigen::VectorXd q = xs.at(pub_idx).head(model->nq);
+  Eigen::VectorXd q = xs.at(pub_idx).head(model->nq).cast<double>();
   geometry_msgs::TransformStamped robot_base_transform;
   robot_base_transform.header.stamp = ros::Time::now();
   robot_base_transform.header.frame_id = "world";
@@ -208,15 +213,15 @@ void BipedControllerInterface::publishRootPose(int pub_idx) {
 }
 
 void BipedControllerInterface::publishJointStates(int pub_idx) {
-  std::shared_ptr<crocoddyl::ActuationDataAbstract> actuation_data =
+  std::shared_ptr<crocoddyl::ActuationDataAbstractTpl<Scalar>> actuation_data =
       core_->getActuationData(pub_idx);
   const auto &config = core_->getConfig();
   const auto &model = core_->getModel();
   const auto &xs = core_->getXs();
   const auto &us = core_->getUs();
 
-  Eigen::VectorXd q = xs.at(pub_idx).head(model->nq);
-  Eigen::VectorXd v = xs.at(pub_idx).tail(model->nv);
+  Eigen::VectorXd q = xs.at(pub_idx).head(model->nq).cast<double>();
+  Eigen::VectorXd v = xs.at(pub_idx).tail(model->nv).cast<double>();
   sensor_msgs::JointState joint_state;
   joint_state.header.stamp = ros::Time::now();
   for (pinocchio::JointIndex i = 2; i < model->njoints; i++) {
@@ -238,7 +243,7 @@ void BipedControllerInterface::publishFootPoses(int pub_idx) {
   const auto &data = core_->getData();
   const auto &xs = core_->getXs();
   const auto &config = core_->getConfig();
-  Eigen::VectorXd q = xs.at(pub_idx).head(model->nq);
+  Eigen::VectorXd q = xs.at(pub_idx).head(model->nq).cast<double>();
   pinocchio::forwardKinematics(*model, *data, q);
   pinocchio::updateFramePlacements(*model, *data);
 
@@ -305,7 +310,7 @@ void BipedControllerInterface::publishFootTrajectory() {
   pinocchio::FrameIndex lfoot_id = model->getFrameId(config.lleg);
   pinocchio::FrameIndex rfoot_id = model->getFrameId(config.rleg);
   for (int i = 0; i < (int)xs.size(); i++) {
-    Eigen::VectorXd q_i = xs.at(i).head(model->nq);
+    Eigen::VectorXd q_i = xs.at(i).head(model->nq).cast<double>();
     pinocchio::forwardKinematics(*model, *data, q_i);
     pinocchio::updateFramePlacements(*model, *data);
     {

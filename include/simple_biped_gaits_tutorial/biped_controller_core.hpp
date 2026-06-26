@@ -13,6 +13,7 @@
 #include <crocoddyl/core/activations/quadratic-barrier.hpp>
 #include <crocoddyl/core/activations/weighted-quadratic.hpp>
 #include <crocoddyl/core/costs/cost-sum.hpp>
+#include <crocoddyl/core/costs/residual.hpp>
 #include <crocoddyl/core/fwd.hpp>
 #include <crocoddyl/core/integrator/euler.hpp>
 #include <crocoddyl/core/optctrl/shooting.hpp>
@@ -30,12 +31,14 @@
 #include <crocoddyl/multibody/actuations/floating-base.hpp>
 #include <crocoddyl/multibody/contacts/contact-3d.hpp>
 #include <crocoddyl/multibody/contacts/contact-6d.hpp>
+#include <crocoddyl/multibody/contacts/multiple-contacts.hpp>
 #include <crocoddyl/multibody/fwd.hpp>
 #include <crocoddyl/multibody/residuals/centroidal-momentum.hpp>
 #include <crocoddyl/multibody/residuals/com-position.hpp>
 #include <crocoddyl/multibody/residuals/contact-wrench-cone.hpp>
 #include <crocoddyl/multibody/residuals/frame-placement.hpp>
 #include <crocoddyl/multibody/residuals/state.hpp>
+#include <crocoddyl/multibody/states/multibody.hpp>
 #include <crocoddyl/multibody/wrench-cone.hpp>
 
 #include <Eigen/Core>
@@ -47,6 +50,10 @@
 
 class BipedControllerCore {
 public:
+  using Scalar = float;
+  using VectorXs = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
+  using Vector3s = Eigen::Matrix<Scalar, 3, 1>;
+
   enum SolverType { FDDP = 0, BOX_FDDP, INTRO, HPIPM_SQP };
 
   struct CostWeight {
@@ -127,22 +134,25 @@ public:
   void createSolver();
   void solvePlanningProblem();
 
-  std::shared_ptr<crocoddyl::ActuationDataAbstract> getActuationData(int idx);
-  std::pair<std::shared_ptr<crocoddyl::ContactModelMultiple>,
-            std::shared_ptr<crocoddyl::ContactDataMultiple>>
+  std::shared_ptr<crocoddyl::ActuationDataAbstractTpl<Scalar>>
+  getActuationData(int idx);
+  std::pair<std::shared_ptr<crocoddyl::ContactModelMultipleTpl<Scalar>>,
+            std::shared_ptr<crocoddyl::ContactDataMultipleTpl<Scalar>>>
   getContactModelAndData(int idx);
 
   const Config &getConfig() const { return config_; }
   const std::shared_ptr<pinocchio::Model> &getModel() const { return model_; }
   const std::shared_ptr<pinocchio::Data> &getData() const { return data_; }
-  const std::shared_ptr<crocoddyl::ShootingProblem> &getWalkingProblem() const {
+  const std::shared_ptr<crocoddyl::ShootingProblemTpl<Scalar>> &
+  getWalkingProblem() const {
     return walking_problem_;
   }
-  const std::shared_ptr<crocoddyl::SolverAbstract> &getSolver() const {
+  const std::shared_ptr<crocoddyl::SolverAbstractTpl<Scalar>> &
+  getSolver() const {
     return solver_;
   }
-  const std::vector<Eigen::VectorXd> &getXs() const { return xs_; }
-  const std::vector<Eigen::VectorXd> &getUs() const { return us_; }
+  const std::vector<VectorXs> &getXs() const { return xs_; }
+  const std::vector<VectorXs> &getUs() const { return us_; }
   double getLastSolveTime() const { return last_solve_time_; }
 
 private:
@@ -153,12 +163,12 @@ private:
                     const std::string &label = "Problem");
   void printModelInfo() const;
 
-  std::shared_ptr<crocoddyl::ShootingProblem>
-  createWalkingProblem(const Eigen::VectorXd &x0, const double stepLength,
+  std::shared_ptr<crocoddyl::ShootingProblemTpl<Scalar>>
+  createWalkingProblem(const VectorXs &x0, const double stepLength,
                        const double stepHeight, const double timeStep,
                        const std::size_t stepKnots,
                        const std::size_t supportKnots);
-  std::vector<std::shared_ptr<crocoddyl::ActionModelAbstract>>
+  std::vector<std::shared_ptr<crocoddyl::ActionModelAbstractTpl<Scalar>>>
   createFootStepModels(
       double timeStep, Eigen::Vector3d &comPos0,
       std::vector<std::pair<pinocchio::FrameIndex, Eigen::Vector3d>> &feetPos0,
@@ -166,7 +176,8 @@ private:
       const std::size_t numKnots,
       const std::vector<pinocchio::FrameIndex> &supportFootIds,
       const std::vector<pinocchio::FrameIndex> &swingFootIds);
-  std::shared_ptr<crocoddyl::ActionModelAbstract> createSwingFootModel(
+  std::shared_ptr<crocoddyl::ActionModelAbstractTpl<Scalar>>
+  createSwingFootModel(
       double timeStep, const std::vector<pinocchio::FrameIndex> &supportFootIds,
       const Eigen::Vector3d &comTask = Eigen::Vector3d::Zero(),
       const std::vector<std::pair<pinocchio::FrameIndex, Eigen::Vector3d>>
@@ -176,17 +187,18 @@ private:
   Config config_;
   std::shared_ptr<pinocchio::Model> model_;
   std::shared_ptr<pinocchio::Data> data_;
+  std::shared_ptr<pinocchio::ModelTpl<Scalar>> model_f_;
   pinocchio::FrameIndex left_foot_id_;
   pinocchio::FrameIndex right_foot_id_;
-  std::shared_ptr<crocoddyl::StateMultibody> state_;
-  std::shared_ptr<crocoddyl::ActuationModelFloatingBase> actuation_;
-  std::shared_ptr<crocoddyl::ShootingProblem> walking_problem_;
-  std::shared_ptr<crocoddyl::SolverAbstract> solver_;
+  std::shared_ptr<crocoddyl::StateMultibodyTpl<Scalar>> state_;
+  std::shared_ptr<crocoddyl::ActuationModelFloatingBaseTpl<Scalar>> actuation_;
+  std::shared_ptr<crocoddyl::ShootingProblemTpl<Scalar>> walking_problem_;
+  std::shared_ptr<crocoddyl::SolverAbstractTpl<Scalar>> solver_;
 
-  Eigen::VectorXd x0_;
-  Eigen::VectorXd q0_;
-  std::vector<Eigen::VectorXd> xs_;
-  std::vector<Eigen::VectorXd> us_;
+  VectorXs x0_;
+  VectorXs q0_;
+  std::vector<VectorXs> xs_;
+  std::vector<VectorXs> us_;
   double last_solve_time_ = 0.0;
   bool first_step_ = true;
 };
