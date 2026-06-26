@@ -116,6 +116,9 @@ void BipedControllerCore::createSolver() {
   }
   }
 
+  if (std::is_same<Scalar, float>::value)
+    solver_->set_th_stop(1e-3);
+
   createInitialGuess();
 
   solver_->get_problem()->set_nthreads(config_.num_threads);
