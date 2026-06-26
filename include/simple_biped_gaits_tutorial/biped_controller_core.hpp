@@ -20,7 +20,9 @@
 #include <crocoddyl/core/residuals/joint-effort.hpp>
 #include <crocoddyl/core/solvers/box-fddp.hpp>
 #include <crocoddyl/core/solvers/fddp.hpp>
+#ifdef CROCODDYL_WITH_HPIPM
 #include <crocoddyl/core/solvers/hpipm-sqp.hpp>
+#endif
 #include <crocoddyl/core/solvers/intro.hpp>
 #include <crocoddyl/core/utils/timer.hpp>
 #include <crocoddyl/multibody/actions/contact-fwddyn.hpp>

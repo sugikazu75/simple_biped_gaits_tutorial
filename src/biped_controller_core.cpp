@@ -89,7 +89,15 @@ void BipedControllerCore::createSolver() {
     break;
   }
   case SolverType::HPIPM_SQP: {
+#ifdef CROCODDYL_WITH_HPIPM
     solver_ = std::make_shared<crocoddyl::SolverHpipmSQP>(walking_problem_);
+#else
+    throw std::runtime_error(
+        "HPIPM_SQP solver is selected but crocoddyl was built without HPIPM "
+        "support "
+        "(CROCODDYL_WITH_HPIPM is not defined). Rebuild crocoddyl with "
+        "BUILD_WITH_HPIPM=ON and hpipm-cpp available.");
+#endif
     break;
   }
   default: {
