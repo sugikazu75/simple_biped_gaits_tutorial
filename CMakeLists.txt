@@ -21,6 +21,8 @@ catkin_package(
   CATKIN_DEPENDS geometry_msgs nav_msgs roscpp sensor_msgs std_msgs tf tf2_ros
   )
 
+option(USE_DOUBLE_PRECISION "Build with double precision" OFF)
+
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
@@ -37,6 +39,13 @@ target_link_libraries(simple_biped_gaits_planner
   pinocchio::pinocchio
   crocoddyl::crocoddyl
   )
+if(USE_DOUBLE_PRECISION)
+  message(STATUS "Building simple_biped_gaits_planner with DOUBLE precision.")
+  target_compile_definitions(simple_biped_gaits_planner PUBLIC USE_DOUBLE_PRECISION)
+else()
+  message(STATUS "Building simple_biped_gaits_planner with FLOAT precision.")
+endif()
+
 
 add_executable(simple_biped_gaits src/simple_biped_gaits_node.cpp)
 target_link_libraries(simple_biped_gaits

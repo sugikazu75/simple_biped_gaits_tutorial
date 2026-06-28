@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <type_traits>
 
 BipedControllerCore::BipedControllerCore(const Config &config)
     : config_(config) {
@@ -108,6 +109,22 @@ void BipedControllerCore::createSolver() {
         "BUILD_WITH_HPIPM=ON and hpipm-cpp available.");
 #endif
     break;
+  }
+  case SolverType::IPOPT: {
+#ifdef CROCODDYL_WITH_IPOPT
+#ifdef USE_DOUBLE_PRECISION
+    solver_ = std::make_shared<crocoddyl::SolverIpopt>(walking_problem_);
+#else
+    throw std::runtime_error("IPOPT solver is selected but this node is not "
+                             "build with double precision.");
+#endif
+#else
+    throw std::runtime_error(
+        "IPOPT solver is selected but crocoddyl was built without IPOPT "
+        "support "
+        "(CROCODDYL_WITH_IPOPT is not defined). Rebuild crocoddyl with "
+        "BUILD_WITH_IPOPT=ON and ipopt available.");
+#endif
   }
   default: {
     std::cerr << "Invalid solver type: " << (int)config_.solver_type

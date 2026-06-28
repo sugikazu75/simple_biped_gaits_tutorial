@@ -24,6 +24,9 @@
 #ifdef CROCODDYL_WITH_HPIPM
 #include <crocoddyl/core/solvers/hpipm-sqp.hpp>
 #endif
+#ifdef CROCODDYL_WITH_IPOPT
+#include <crocoddyl/core/solvers/ipopt.hpp>
+#endif
 #include <crocoddyl/core/solvers/intro.hpp>
 #include <crocoddyl/core/utils/timer.hpp>
 #include <crocoddyl/multibody/actions/contact-fwddyn.hpp>
@@ -50,11 +53,15 @@
 
 class BipedControllerCore {
 public:
+#ifdef USE_DOUBLE_PRECISION
+  using Scalar = double;
+#else
   using Scalar = float;
+#endif
   using VectorXs = Eigen::Matrix<Scalar, Eigen::Dynamic, 1>;
   using Vector3s = Eigen::Matrix<Scalar, 3, 1>;
 
-  enum SolverType { FDDP = 0, BOX_FDDP, INTRO, HPIPM_SQP };
+  enum SolverType { FDDP = 0, BOX_FDDP, INTRO, HPIPM_SQP, IPOPT };
 
   struct CostWeight {
     Eigen::VectorXd x_weights = Eigen::VectorXd::Zero(0);
@@ -105,7 +112,9 @@ public:
                                ? "BOX_FDDP"
                                : (solver_type == SolverType::INTRO
                                       ? "INTRO"
-                                      : "HPIPM_SQP")))
+                                      : (solver_type == SolverType::HPIPM_SQP
+                                             ? "HPIPM_SQP"
+                                             : "IPOPT"))))
                 << std::endl;
     }
 
